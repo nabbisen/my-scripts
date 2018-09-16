@@ -1,0 +1,15 @@
+{
+    "connection": {
+        "server": "imap.xxx.com",
+        "port": "993",
+        "uid": "your-email@address",
+        "pwd": "your-password"
+    },
+    "condition": {
+        "keywords": [
+            "word1",
+            "word2"
+        ],
+        "since": "17-Sep-2018"
+    }
+}
