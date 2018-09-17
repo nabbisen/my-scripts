@@ -112,14 +112,14 @@ def main():
     if isinstance(conn, int):
         sys.exit(conn)
     
-    # 次回実行時の SINCE 条件として実行時刻を記憶する
+    # 次回実行時の SINCE 条件として実行日を記憶する
     since = datetime.datetime.now().strftime("%d-%b-%Y")
 
     patrol(conn, conf["condition"])
     conn.close()
     conn.logout()
     
-    # 実行時刻を更新する
+    # 実行日を更新する
     conf["condition"]["since"] = since
     with open(CONF_JSON, "w") as f:
         json.dump(conf, f, indent=4)
