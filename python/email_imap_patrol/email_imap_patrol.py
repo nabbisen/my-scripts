@@ -3,6 +3,9 @@
 # [ How to setup CentOS 7 ]
 # yum install centos-release-scl
 # yum install rh-python36
+# scl enable rh-python36 bash
+# [ How to run ]
+# python3 email_imap_patrol.py
 
 import sys, os, datetime, json
 import imaplib, email
