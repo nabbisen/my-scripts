@@ -107,7 +107,7 @@ def patrol(conn, cond):
                 conn.store(num, "+FLAGS", "\\Deleted")
                 conn.store(num, "+FLAGS", "\\Seen")
                 # 削除履歴を更新する
-                delete_logs.append("[date]{} [from]{} [subject]{} [keyword]{}\n".format(msg["Date"], msg["From"], subject, k))
+                delete_logs.append("[date]{} [from]{} [subject]{} [keyword]{}".format(msg["Date"], msg["From"], subject, k))
                 break
 
     # # 削除フラグの立っているメールを物理削除する
@@ -117,7 +117,7 @@ def patrol(conn, cond):
     # 削除履歴を記録する
     print("{} message[s] deleted.".format(len(delete_logs)))
     with open(DELETE_LOG, "a") as f:
-        f.write(os.linesep.join(delete_logs))
+        f.write("\n".join(delete_logs))
 
 # [ MAIN ]
 def main():
