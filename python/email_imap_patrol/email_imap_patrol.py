@@ -6,6 +6,7 @@
 # scl enable rh-python36 bash
 # [ How to setup chardet ]
 # pip3 [or simply `pip` if it uses `python3`] install chardet
+# * ref: https://pypi.org/project/chardet/
 # [ How to run ]
 # python3 email_imap_patrol.py
 
