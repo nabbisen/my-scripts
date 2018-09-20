@@ -4,11 +4,14 @@
 # yum install centos-release-scl
 # yum install rh-python36
 # scl enable rh-python36 bash
+# [ How to setup chardet ]
+# pip3 [or simply `pip` if it uses `python3`] install chardet
 # [ How to run ]
 # python3 email_imap_patrol.py
 
 import sys, os, datetime, json
 import imaplib, email
+import chardet
 
 # [ Constants ]
 CONF_JSON = "conf.json"
@@ -96,7 +99,7 @@ def patrol(conn, cond):
             subject = str(raw_subject.decode(msg_encoding))
         # 本文を取得する
         raw_body = msg.get_payload(decode=True)
-        body = raw_body.decode()
+        body = raw_body.decode(chardet.detect(raw_body)["encoding"])
         # for debug:
         #print(subject, body)
 
