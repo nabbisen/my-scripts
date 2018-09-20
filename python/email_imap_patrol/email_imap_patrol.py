@@ -140,7 +140,7 @@ def main():
     # 実行日を更新する
     conf["condition"]["since"] = since
     with open(CONF_JSON, "w") as f:
-        json.dump(conf, f, indent=4)
+        json.dump(conf, f, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
     main()
