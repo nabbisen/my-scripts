@@ -74,9 +74,9 @@ def get_conn(conf):
 # 不要メールを検索して削除する
 def patrol(conn, cond):
     if "since" in cond:
-        head, data = conn.search(None, "(UNSEEN)", "(SINCE {})".format(cond["since"]))
+        head, data = conn.search(None, "UNSEEN SINCE {}".format(cond["since"]))
     else:
-        head, data = conn.search(None, "(UNSEEN)")
+        head, data = conn.search(None, "UNSEEN")
 
     # 取得したメール一覧の処理を行う
     msg_nums = data[0].split()
