@@ -37,11 +37,37 @@ def get_conf():
     if not "condition" in conf:
         print("[Error] Json obj not found: condition.")
         return 3
-    # キーワード設定から空行ならびに空白行を削除する
-    conf["condition"]["keywords"] = [x.strip() for x in conf["condition"]["keywords"] if x.strip() != ""]
-    if len(conf["condition"]["keywords"]) == 0:
+
+    # キーワード設定のデータ構造を最適化する
+    cond_list = []
+    for kgrp in conf["condition"]["keywords"]:
+        if not isinstance(kgrp, list):
+            kgrp_mod = [str(kgrp)]
+        else:
+            kgrp_mod = kgrp
+        # キーワード設定から空行ならびに空白行を削除する
+        kgrp_mod = [x.strip() for x in kgrp_mod if x.strip() != ""]
+        # キーワードの重複を削除する
+        kgrp_mod_uniq = []
+        for k in kgrp_mod:
+            if not k in kgrp_mod_uniq:
+                kgrp_mod_uniq.append(k)
+        kgrp_mod = kgrp_mod_uniq
+        # 有効なキーワードが存在する場合
+        if 0 < len(kgrp_mod):
+            cond_list.append(kgrp_mod)
+    # キーワードのグループの重複を削除する（ただし処理の簡素化のためにグループ内の要素の並び順まで同じもののみを削除対象とする）
+    cond_list_uniq = []
+    for kgrp in cond_list:
+        if not kgrp in cond_list_uniq:
+            cond_list_uniq.append(kgrp)
+    cond_list = cond_list_uniq
+    # 有効なキーワードのグループが存在する場合
+    if len(cond_list) == 0:
         print("[Error] No valid keywords in condition.")
         return 4
+    conf["condition"]["keywords"] = cond_list
+
     if not "since" in conf["condition"]:
         print("[Warn] No delete log.")
     
@@ -105,14 +131,24 @@ def patrol(conn, cond):
         #print(subject, body)
 
         # キーワードにマッチするかどうかをチェックする
-        for k in cond["keywords"]:
-            if k in "{}\n{}".format(subject, body):
-                # メールに削除フラグ＋既読フラグを付与する
-                conn.store(num, "+FLAGS", "\\Deleted")
-                conn.store(num, "+FLAGS", "\\Seen")
-                # 削除履歴を更新する
-                delete_logs.append("[date]{} [from]{} [subject]{} [keyword]{}".format(msg["Date"], msg["From"], subject, k))
+        is_delete_target = False
+        for kgrp in cond["keywords"]:
+            # キーワード単位に AND 判定を行う
+            is_delete_candidate = True
+            for k in kgrp:
+                if not k in "{}\n{}".format(subject, body):
+                    is_delete_candidate = False
+                    break
+            # キーワードのグループ単位に OR 判定を行う
+            if is_delete_candidate == True:
+                is_delete_target = True
                 break
+        if is_delete_target == True:
+            # メールに削除フラグ＋既読フラグを付与する
+            conn.store(num, "+FLAGS", "\\Deleted")
+            conn.store(num, "+FLAGS", "\\Seen")
+            # 削除履歴を更新する
+            delete_logs.append("[date]{} [from]{} [subject]{} [keyword]{}".format(msg["Date"], msg["From"], subject, k))
 
     # # 削除フラグの立っているメールを物理削除する
     # （本プログラム以外で削除フラグが立てられた場合にも該当する。予期せぬ動作を避けるため、コメントアウトして動作しないようにする）
