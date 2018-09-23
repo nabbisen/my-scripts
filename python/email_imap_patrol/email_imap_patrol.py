@@ -1,12 +1,5 @@
 #!/usr/bin/python3
 
-# [ How to setup CentOS 7 ]
-# yum install centos-release-scl
-# yum install rh-python36
-# scl enable rh-python36 bash
-# [ How to setup chardet ]
-# pip3 [or simply `pip` if it uses `python3`] install chardet
-# * ref: https://pypi.org/project/chardet/
 # [ How to run ]
 # python3 email_imap_patrol.py
 
@@ -14,6 +7,9 @@ import sys, os, datetime, json
 from json.decoder import JSONDecodeError
 from enum import Enum, unique
 import imaplib, email
+# chardet is required for multibyte emails:
+# pip3 [or simply `pip` if it uses `python3`] install chardet
+# * ref: https://pypi.org/project/chardet/
 import chardet
 
 # [ Constants ]
