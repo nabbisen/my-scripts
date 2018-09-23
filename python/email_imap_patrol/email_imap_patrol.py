@@ -11,6 +11,8 @@
 # python3 email_imap_patrol.py
 
 import sys, os, datetime, json
+from json.decoder import JSONDecodeError
+from enum import Enum, unique
 import imaplib, email
 import chardet
 
@@ -18,25 +20,40 @@ import chardet
 CONF_JSON = "conf.json"
 DELETE_LOG = "delete.log"
 
+@unique
+class AppError(Enum):
+    CONF_JSON_NOT_FOUND = 1
+    CONF_JSON_INVALID_FORMAT = 2
+    CONF_JSON_NO_CONN = 10
+    CONF_JSON_NO_COND = 11
+    CONF_JSON_INVALID_COND = 20
+    CONN_OPEN_FAILURE = 100
+    CONN_LOGIN_FAILURE = 101
+    CONN_INBOX_NOT_FOUND = 102
+
 # [ Functions ]
 # システム設定を取得する
 def get_conf():
     # ファイル存在をチェックする
     if not os.path.isfile(CONF_JSON):
         print("[Error] File not found: {} .".format(CONF_JSON))
-        return 1
+        return AppError.CONF_JSON_NOT_FOUND.value
 
-    with open(CONF_JSON) as f:
-        conf = json.load(f)
+    try:
+        with open(CONF_JSON) as f:
+            conf = json.load(f)
+    except JSONDecodeError:
+        print("[Error] conf.json: invalid json format.")
+        return AppError.CONF_JSON_INVALID_FORMAT.value
     print("Conf loaded.")
     
     # ファイル内容の妥当性をチェックする
     if not "connection" in conf:
         print("[Error] Json obj not found: connection.")
-        return 2
+        return AppError.CONF_JSON_NO_CONN.value
     if not "condition" in conf:
         print("[Error] Json obj not found: condition.")
-        return 3
+        return AppError.CONF_JSON_NO_CONF.value
 
     # キーワード設定のデータ構造を最適化する
     cond_list = []
@@ -65,7 +82,7 @@ def get_conf():
     # 有効なキーワードのグループが存在する場合
     if len(cond_list) == 0:
         print("[Error] No valid keywords in condition.")
-        return 4
+        return AppError.CONF_JSON_INVALID_COND.value
     conf["condition"]["keywords"] = cond_list
 
     if not "since" in conf["condition"]:
@@ -80,20 +97,20 @@ def get_conn(conf):
         conn = imaplib.IMAP4_SSL(conf["server"], conf["port"])
     except:
         print("[Error] Failed to connect.")
-        return 10
+        return AppError.CONN_OPEN_FAILURE.value
     print("Connected.")
     # 認証を行う
     try:
         conn.login(conf["uid"], conf["pwd"])
     except:
         print("[Error] Failed to log in.")
-        return 11
+        return AppError.CONN_LOGIN_FAILURE.value
     # 受信箱を選択する
     try:
         conn.select("Inbox")
     except:
         print("[Error] Failed to select Inbox.")
-        return 12
+        return AppError.CONN_INBOX_NOT_FOUND.value
     print("Logged in.")
     return conn
 
