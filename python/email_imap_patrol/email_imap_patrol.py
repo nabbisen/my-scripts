@@ -46,7 +46,7 @@ def get_conf():
         else:
             kgrp_mod = kgrp
         # キーワード設定から空行ならびに空白行を削除する
-        kgrp_mod = [x.strip() for x in kgrp_mod if x.strip() != ""]
+        kgrp_mod = [x for x in kgrp_mod if x.strip() != ""]
         # キーワードの重複を削除する
         kgrp_mod_uniq = []
         for k in kgrp_mod:
@@ -142,13 +142,14 @@ def patrol(conn, cond):
             # キーワードのグループ単位に OR 判定を行う
             if is_delete_candidate == True:
                 is_delete_target = True
+                delele_kgrp = kgrp
                 break
         if is_delete_target == True:
             # メールに削除フラグ＋既読フラグを付与する
             conn.store(num, "+FLAGS", "\\Deleted")
             conn.store(num, "+FLAGS", "\\Seen")
             # 削除履歴を更新する
-            delete_logs.append("[date]{} [from]{} [subject]{} [keyword]{}".format(msg["Date"], msg["From"], subject, k))
+            delete_logs.append("date={}, from={}, subject]={}, keyword[s]={}".format(msg["Date"], msg["From"], subject, " AND ".join(["\"" + x + "\"" for x in delele_kgrp])))
 
     # # 削除フラグの立っているメールを物理削除する
     # （本プログラム以外で削除フラグが立てられた場合にも該当する。予期せぬ動作を避けるため、コメントアウトして動作しないようにする）
@@ -156,8 +157,9 @@ def patrol(conn, cond):
 
     # 削除履歴を記録する
     print("{} message[s] deleted.".format(len(delete_logs)))
-    with open(DELETE_LOG, "a") as f:
-        f.write("\n".join(delete_logs))
+    if 0 < len(delete_logs):
+        with open(DELETE_LOG, "a+") as f:
+            f.write("\n".join(delete_logs) + "\n")
 
 # [ MAIN ]
 def main():
